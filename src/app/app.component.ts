@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { EditDialogComponent } from './edit-dialog/edit-dialog.component';
@@ -8,6 +8,7 @@ import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { Subscription } from 'rxjs';
 
 export interface PeriodicElement {
   position: number;
@@ -45,13 +46,15 @@ const ELEMENT_DATA: PeriodicElement[] = [
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   title = 'coding-assessment-atipera-angular-developer';
   
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
   dataSource: PeriodicElement[] = [];
   filterControl = new FormControl('');
   filteredData: PeriodicElement[] = [];
+
+  private subscriptions = new Subscription();
 
   constructor(public dialog: MatDialog) {}
 
@@ -61,12 +64,19 @@ export class AppComponent implements OnInit {
       this.filteredData = this.dataSource;
     }, 1000);
 
-    this.filterControl.valueChanges
+    this.subscriptions.add(
+      this.filterControl.valueChanges
       .pipe(debounceTime(2000))
       .subscribe((value) => {
         this.applyFilter(value || '');
-      });
+      })
+    )
   }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
 
   applyFilter(filterValue: string) {
     if (!filterValue) {
@@ -88,7 +98,7 @@ export class AppComponent implements OnInit {
       data: { value: element[field], field: field },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
+    this.subscriptions.add(dialogRef.afterClosed().subscribe((result) => {
       if (result !== undefined) {
         this.dataSource = this.dataSource.map((el) => {
           if (el === element) {
@@ -98,6 +108,6 @@ export class AppComponent implements OnInit {
         });
         this.applyFilter(this.filterControl.value || '');
       }
-    });
+    }))
   }
 }
