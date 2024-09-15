@@ -1,0 +1,20 @@
+table {
+    width: 100%;
+}
+  
+.mat-form-field {
+    width: 100%;
+}
+
+td {
+    cursor: pointer;
+}
+
+td:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s;
+}
+
+.mat-form-div {
+    margin: 1em 1em 0em 1em;
+}
